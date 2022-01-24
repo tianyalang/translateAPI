@@ -16,8 +16,8 @@ def read_config():
         return json.load(j)['baiduAPI']  # dic
 
 
-def trans(query):
-    """自动判断语种，并译为汉语"""
+def trans(query, targetLanguage='zh'):
+    """自动判断语种，并翻译，默认目标语言为汉语"""
 
     cfg = read_config()
     salt = random.randint(32768, 65536)
@@ -25,7 +25,7 @@ def trans(query):
 
     # Build request
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    payload = {'appid': cfg['id'], 'q': query, 'from': 'auto', 'to': 'zh', 'salt': salt, 'sign': sign, 'action': 1}  # 源语言自动确定
+    payload = {'appid': cfg['id'], 'q': query, 'from': 'auto', 'to': targetLanguage, 'salt': salt, 'sign': sign, 'action': 1}  # 源语言自动确定
 
     # Send request
     r = requests.post(cfg['url'], params=payload, headers=headers)
@@ -45,7 +45,5 @@ def display(result):
 
 
 if __name__ == '__main__':
-    # content = 'Hello World! This is 1st paragraph.\nThis is 2nd paragraph, he is a chinese.'
     content = sys.argv[1]  # 外部调用.py时, 第一个输入变量
     display(trans(content))
-    
