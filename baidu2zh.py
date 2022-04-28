@@ -6,7 +6,9 @@ import json
 from hashlib import md5
 
 
-def make_md5(s):
+def getSign(cfg, strings, salt, domain=''):
+    """生成签名"""
+    s = cfg['id'] + strings + str(salt) + domain + cfg['key']
     return md5(s.encode('utf-8')).hexdigest()
 
 
@@ -16,19 +18,25 @@ def read_config():
         return json.load(j)['baiduAPI']  # dic
 
 
-def trans(query, targetLanguage='zh'):
-    """自动判断语种，并翻译，默认目标语言为汉语"""
-
+def sendRequest(type, text, src='', dst='', domain=''):
+    """语种识别、通用翻译、专业翻译三种功能的统一请求命令"""
     cfg = read_config()
     salt = random.randint(32768, 65536)
-    sign = make_md5(cfg['id'] + query + str(salt) + cfg['key'])  # 生成签名
 
-    # Build request
+    if type == 'language':  # 支持识别中、英、日、韩、泰、越南、俄
+        sign = getSign(cfg, text, salt)
+        data = {'appid': cfg['id'], 'q': text, 'salt': salt, 'sign': sign}
+
+    elif type == 'translate':
+        sign = getSign(cfg, text, salt)
+        data = {'appid': cfg['id'], 'q': text, 'from': src, 'to': dst, 'salt': salt, 'sign': sign, 'action': 1}
+
+    elif type == 'fieldtranslate':
+        sign = getSign(cfg, text, salt, domain)
+        data = {'appid': cfg['id'], 'q': text, 'from': src, 'to': dst, 'salt': salt, 'sign': sign, 'domain': domain}
+
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    payload = {'appid': cfg['id'], 'q': query, 'from': 'auto', 'to': targetLanguage, 'salt': salt, 'sign': sign, 'action': 1}  # 源语言自动确定
-
-    # Send request
-    r = requests.post(cfg['url'], params=payload, headers=headers)
+    r = requests.post(cfg['url']+type, params=data, headers=headers)
     return r.json()
 
 
@@ -45,5 +53,13 @@ def display(result):
 
 
 if __name__ == '__main__':
-    content = sys.argv[1]  # 外部调用.py时, 第一个输入变量
-    display(trans(content))
+    args = sys.argv  # 外部调用.py时, 输入参数列表，第0个参数是函数文件名本身
+
+    if len(args) == 2: # 外部输入1个参数时，用通用翻译
+        test = sendRequest('language', args[1])
+        src = test['data']['src'] if test['error_msg'] == 'success' else 'auto'
+        dst = 'en' if src == 'zh' else 'zh'
+        display(sendRequest('translate', args[1], src, dst))
+
+    elif len(args) == 3 and args[-1] == 'electronics': # 2个参数，专业翻译
+        display(sendRequest('fieldtranslate', args[1], 'zh', 'en', 'electronics'))
