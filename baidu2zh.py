@@ -1,10 +1,11 @@
-import requests
-import random
-import sys
-import os
 import io
 import json
+import os
+import random
+import sys
 from hashlib import md5
+
+import requests
 from PIL import ImageGrab
 
 
@@ -46,7 +47,7 @@ def sendRequest(type, text='', src='', dst='', domain=''):
             'to': dst,
             'salt': salt,
             'sign': sign,
-            'action': 1
+            'action': 1,
         }
 
     elif type == 'fieldtranslate':
@@ -59,7 +60,7 @@ def sendRequest(type, text='', src='', dst='', domain=''):
             'to': dst,
             'salt': salt,
             'sign': sign,
-            'domain': domain
+            'domain': domain,
         }
 
     elif type == 'picture':
@@ -76,17 +77,23 @@ def sendRequest(type, text='', src='', dst='', domain=''):
             'sign': sign,
             'cuid': 'APICUID',
             'mac': 'mac',
-            'version': 3
+            'version': 3,
         }
-        image = {'image': (os.path.basename(img_path), open(img_path,'rb'), "multipart/form-data")}
+        image = {
+            'image': (
+                os.path.basename(img_path),
+                open(img_path, 'rb'),
+                "multipart/form-data",
+            )
+        }
         response = requests.post(url, params=data, files=image)
         return response.json()['data']['content']
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     r = requests.post(url, params=data, headers=headers)
     return r.json()
-    #TODO 不知道如何在 goldenDict 中激活该程序
-    
+    # TODO 不知道如何在 goldenDict 中激活该程序
+
 
 def display(result):
     """GoldenDic 中以 html 语言显示"""
@@ -97,11 +104,11 @@ def display(result):
     else:
         ans = result['trans_result']
         print('原文 (' + result['from'] + ')')
-        print("<p style='color:red'>&nbsp&nbsp&nbsp&nbsp" + ans[0]['src'] +
-              "</p><hr/>")  # 行首两空格, 结尾分隔线
+        print(
+            "<p style='color:red'>&nbsp&nbsp&nbsp&nbsp" + ans[0]['src'] + "</p><hr/>"
+        )  # 行首两空格, 结尾分隔线
         print('译文 (' + result['to'] + ')')
-        print("<p style='color:blue'>&nbsp&nbsp&nbsp&nbsp" + ans[0]['dst'] +
-              "</p>")
+        print("<p style='color:blue'>&nbsp&nbsp&nbsp&nbsp" + ans[0]['dst'] + "</p>")
 
 
 if __name__ == '__main__':
@@ -114,5 +121,4 @@ if __name__ == '__main__':
         display(sendRequest('translate', args[1], src, dst))
 
     elif len(args) == 3 and args[-1] == 'electronics':  # 2个参数，专业翻译
-        display(
-            sendRequest('fieldtranslate', args[1], 'zh', 'en', 'electronics'))
+        display(sendRequest('fieldtranslate', args[1], 'zh', 'en', 'electronics'))
