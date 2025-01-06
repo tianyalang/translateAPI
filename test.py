@@ -1,7 +1,14 @@
-import baidu2zh as x
+# import baidu2zh as x
 # import baidu2zhfeild as y
 
+x = 3
+print(x**3)
+m = "ddkx"
+n = 'dkd'
 
+
+def my(he):
+    return he + 3
 
 
 # s1 = 'Hello World! This is 1st paragraph.\nThis is 2nd paragraph, he is a chinese.'
@@ -11,7 +18,7 @@ import baidu2zh as x
 
 # print(x.read_config())
 # print(x.sendRequest('language', s4))
-# print(x.trans(s1, 'en', 'zh'))
+# print(x.sendRequest(s1, 'en', 'zh'))
 # print(x.sendRequest('fieldtranslate', s2, 'zh', 'en', 'electronics'))
-print(x.sendRequest('picture'))
+# print(x.sendRequest('picture'))
 # print(x.trans(s4, 'jp', 'en'))
